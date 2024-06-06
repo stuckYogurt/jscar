@@ -1,0 +1,30 @@
+.header{
+    background-image: url("imgs/raceFlag.png");
+    background-repeat: repeat;
+    background-size: cover;
+    height: 10vh;
+    display: flex;
+    justify-content: space-between;
+    margin: 0 10px 0 10px;
+}
+
+.gaming_space {
+    background-color: #a3cd3f;
+    height: 90vh;
+    border-top: #000 1px solid;
+    position: relative;
+}
+
+.asphalt {
+    background-color: gray;
+    border-right: #000 3px solid;
+    border-left: #000 3px solid;
+    margin: auto;
+    height: 100%;
+    width: 30%;
+}
+
+.score {
+    color: gold;
+    font-size: 100px;
+}

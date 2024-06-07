@@ -1,0 +1,1 @@
+setInterval(() => {alert('ok')}, 5000);

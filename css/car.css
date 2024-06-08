@@ -1,5 +1,6 @@
 .car {
     position: absolute;
+    z-index: 5;
     bottom: 20px;
     left: 100vh;
 }

@@ -2,10 +2,13 @@
     /*background-image: url("../imgs/raceFlag.png");
     background-repeat: no-repeat;
     background-size: cover;*/
+    background-color: white;
     height: 10vh;
+    position: relative;
     display: flex;
     justify-content: space-between;
     padding: 0 10px 0 10px;
+    z-index: 2;
 }
 
 .gaming_space {

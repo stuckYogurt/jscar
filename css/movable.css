@@ -4,3 +4,10 @@
     height: inherit;
     margin: auto;
 }
+
+.mark {
+    width: 2vh;
+    position: absolute;
+    background-color: gray;
+    z-index: 1;
+}

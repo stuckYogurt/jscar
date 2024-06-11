@@ -11,3 +11,15 @@
     background-color: gray;
     z-index: 1;
 }
+
+.movable {
+    position: absolute;
+    background-color: red;
+    width: 10px;
+}
+
+.enemy_car {
+    width: 10px;
+    background-color: black;
+    position: absolute;
+}

@@ -1,8 +1,30 @@
 const version = 'v. 0.0.2';
 document.getElementById('version').innerHTML = version;
 
-let fpsLimit = 60;
-let frameTimeLimit = Math.ceil(1000/fpsLimit); // in ms
+function pr(s) {console.log(s);}
+
+// settings object
+let settings = {
+    enemyCarsImgsQuant: 3,
+    movableImgsQuant: 4,
+    fpsLimit: 60,
+
+    maxObjStart: 10,
+    maxObjPerLine: 2,
+    movableSpawnChance: 7, // in %
+
+    upMove: 'ArrowUp',
+    rightMove: 'ArrowRight',
+    downMove: 'ArrowDown',
+    leftMove: 'ArrowLeft',
+}
+
+
+let frameTimeLimit = Math.ceil(1000/settings.fpsLimit); // in ms
+
+
+
+
 
 // [x; y]
 function getRandomInt(min, max) {
@@ -10,7 +32,7 @@ function getRandomInt(min, max) {
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-function pr(s) {console.log(s)};
+
 
 class Car {
     constructor(carClassName, movementTweeks, upKey, rightKey, downKey, leftKey){
@@ -98,7 +120,7 @@ class Marking {
 
 class Movable {
     constructor(roadLeftX, roadRightX, parentReference, objHeight, start = false) {
-        this.x = (getRandomInt(0,1)==1) ? getRandomInt(0, roadLeftX) : getRandomInt(roadRightX, window.innerWidth);
+        this.x = (getRandomInt(0,1)==1) ? getRandomInt(0, roadLeftX-100) : getRandomInt(roadRightX+100, window.innerWidth);
         this.y = (start) ? getRandomInt(0,window.innerHeight) : window.innerHeight;
 
         this.objHeight = objHeight
@@ -107,7 +129,8 @@ class Movable {
         this.movableReference.className = 'movable';
         this.movableReference.style.height = String(objHeight)+'px';
         this.movableReference.style.left = String(this.x) + 'px';
-        this.movableReference.style.bottom = String(this.y) + 'px'
+        this.movableReference.style.bottom = String(this.y) + 'px';
+        this.movableReference.innerHTML = `<img src="imgs/movable/${getRandomInt(0, settings.movableImgsQuant)}.png" height=${getRandomInt(10,20)*window.innerHeight/100}>`;
         this.parentReference.append(this.movableReference);
     }
 
@@ -128,19 +151,19 @@ class Movable {
 
 
 class CarEnemy {
-    constructor(roadLeftX, roadRightX, objHeight, parentReference, speedFloor, speedCeil) {
+    constructor(roadLeftX, roadRightX, parentReference, speedFloor, speedCeil, imgPath) {
         this.x = getRandomInt(roadLeftX,roadRightX);
         this.y = window.innerHeight;
-        this.objHeight = objHeight;
         this.diff = getRandomInt(speedFloor, speedCeil);
 
         this.parentReference = parentReference;
         this.carRef = document.createElement('div');
         this.carRef.className = 'enemy_car';
-        this.carRef.style.height = String(objHeight)+'px';
         this.carRef.style.left = String(this.x)+'px';
         this.carRef.style.bottom = String(this.y)+'px';
+        this.carRef.innerHTML = `<img src="${imgPath}">`;
         this.parentReference.append(this.carRef);
+        this.objHeight = this.carRef.getBoundingClientRect().height;
     }
 
     isVisible() {
@@ -163,7 +186,23 @@ class CarEnemy {
 class Frames {
     constructor() {
         this.started = false;
-        this.gameSpeed = 10;
+        this.score = 0;
+        this.scoreRef = document.getElementsByClassName('score')[0];
+
+        this.difficulty = {
+            gameSpeed:10,
+
+            steerSpeed: 20,
+            breakSpeed: 20,
+            accelerationSpeed: 20,
+
+            maxEnemyCarSpeed: 14,
+            maxEnemyCarsPerY: 1,
+            enemyCarSpawnChance: 5, // in %
+        }
+
+
+        // start sequence
         document.addEventListener('click', ()=>{
             if (this.started) {
                 clearInterval(this.gameFrameInterval);
@@ -183,13 +222,13 @@ class Frames {
 
             // Movement speed
             {
-                steerSpeed: 1,
-                breakSpeed: 1,
-                accelerationSpeed: 1,
+                steerSpeed: this.difficulty.steerSpeed,
+                breakSpeed: this.difficulty.breakSpeed,
+                accelerationSpeed: this.difficulty.accelerationSpeed,
             },
         
             // Key binds
-            'ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft'
+            settings.upMove, settings.rightMove, settings.downMove, settings.leftMove
         );
 
         // other objects
@@ -205,7 +244,7 @@ class Frames {
         let markHeight = 20; // in vh
         while (y<window.innerHeight) {
             this.movableMarking.push(new Marking(
-                window.innerWidth * 0.5 - 0.5 * markWidth/100 * window.innerHeight, y, 
+                window.innerWidth / 2 - markWidth/200 * window.innerHeight, y, 
                 markingInterval*window.innerHeight/100, this.roadLineRef, markHeight));  
             y+=markingInterval*window.innerHeight/100;
         };
@@ -214,8 +253,8 @@ class Frames {
         this.rect = document.getElementsByClassName('asphalt')[0].getBoundingClientRect();
 
         this.movableParentRef = document.getElementsByClassName('movable_cont')[0];
-        this.maxObjStart = 10;
-        this.maxObjPerLine = 10;
+        this.maxObjStart = settings.maxObjStart;
+        this.maxObjPerLine = settings.maxObjPerLine;
 
         for (let i = 0; i<this.maxObjStart; i++) {
             this.others.push(new Movable(
@@ -230,6 +269,10 @@ class Frames {
     }
 
     frame() {
+        // score
+        this.score += 0.1;
+        this.scoreRef.innerHTML = String(Math.floor(this.score));
+
         // Movement
         if (frames.car.left) {
             this.car.x = this.car.x - this.car.steerSpeed;
@@ -251,34 +294,40 @@ class Frames {
 
         // road markers poll
         let highestMark = this.movableMarking[0].y;
-        for (let i = 1; i < this.movableMarking.length; i++) {
-            highestMark = Math.max(this.movableMarking[i].y, highestMark);
-        }
 
-        for (let i = 0; i < this.movableMarking.length; i++) {
-            this.movableMarking[i].moveSelf(this.gameSpeed);
-            this.movableMarking[i].isVisible(highestMark);
-        }
+        this.movableMarking.forEach((e)=> {
+            highestMark = Math.max(e.y, highestMark);
+        });
+
+        this.movableMarking.forEach((e)=> {
+            e.moveSelf(this.difficulty.gameSpeed);
+            e.isVisible(highestMark);
+        });
 
 
 
         // movable objects
         // poll
         for (let i = 0; i < this.others.length; i++) {
-            this.others[i].moveSelf(this.gameSpeed);
+            this.others[i].moveSelf(this.difficulty.gameSpeed);
             if ( ! this.others[i].isVisible() ) { 
                 this.others.splice(i,1);
                 i -= 1;
             }
         }
+
+
+
         // create
         if (this.others.length < this.maxObjStart) {
             for (let i = 0; i < getRandomInt(0,this.maxObjStart - this.others.length); i++) {
-                this.others.push(new Movable(
-                    this.rect.left,
-                    this.rect.left + this.rect.width,
-                    this.movableParentRef, 10
-                ));
+                if (getRandomInt(0,100) < settings.movableSpawnChance){
+                    this.others.push(new Movable(
+                        this.rect.left,
+                        this.rect.left + this.rect.width,
+                        this.movableParentRef, 10
+                    ));
+                }
             }
         }
         pr(this.others.length);
@@ -294,13 +343,14 @@ class Frames {
         }
 
         // create
-        for (let i = 0; i < getRandomInt(0, this.maxEnemyCarsPerY); i++) {
-            if (getRandomInt(0,100)<=2){
+        for (let i = 0; i < getRandomInt(0, this.difficulty.maxEnemyCarsPerY); i++) {
+            if (getRandomInt(0,100)<=this.difficulty.enemyCarSpawnChance){
                 this.enemyCars.push(new CarEnemy(
                     this.rect.left,
                     this.rect.left + this.rect.width,
-                    40, document.getElementsByClassName('enemy_car_cont')[0],
-                    this.gameSpeed + 1, this.maxEnemyCarSpeed
+                    document.getElementsByClassName('enemy_car_cont')[0],
+                    this.difficulty.gameSpeed + 1, this.difficulty.maxEnemyCarSpeed, 
+                    `imgs/enemyCars/${getRandomInt(0,settings.enemyCarsImgsQuant)}.png`
                 ));
             }
         }

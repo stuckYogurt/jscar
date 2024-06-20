@@ -9,17 +9,22 @@
     width: 2vh;
     position: absolute;
     background-color: gray;
-    z-index: 1;
+    z-index: 0;
 }
 
 .movable {
     position: absolute;
-    background-color: red;
-    width: 10px;
+    
 }
 
 .enemy_car {
-    width: 10px;
-    background-color: black;
+    width: 10vh;
+    height: auto;
     position: absolute;
+    z-index: 1;
+}
+
+.enemy_car img{
+    width: 10vh;
+    height: auto;
 }

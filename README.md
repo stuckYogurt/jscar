@@ -12,4 +12,4 @@ Simple racing game where you need to drive your car and try not to get hit by ot
 - level up
 - fps doesn't affect speed
 - another type of sterring
-- random img chooser of cars and surroundings is not dependent of file names and their quantity is chosen automatically
+- random img chooser of cars and surroundings is not dependent of file names and their quantity is chosen automatically (may not be done w/o plugins)
